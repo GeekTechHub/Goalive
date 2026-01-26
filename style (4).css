@@ -1,0 +1,85 @@
+:root {
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --accent: #4ade80;
+    --text-main: #1a1a1b;
+    --text-muted: #6b7280;
+    --shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+#app {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+/* Header & AI Bubble */
+.header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+.ia-bubble {
+    background: #eef2ff; padding: 0.7rem; border-radius: 12px;
+    font-size: 0.8rem; color: #4f46e5; margin-top: 10px;
+    border-left: 4px solid #4f46e5;
+}
+
+/* Cards */
+.insights-container, .stats-card, .goal-card {
+    background: var(--card-bg);
+    padding: 1.2rem; border-radius: 20px;
+    box-shadow: var(--shadow); margin-bottom: 1rem;
+}
+
+/* Anillo de Progreso */
+.progress-ring-card { position: relative; display: flex; align-items: center; justify-content: center; }
+.progress-ring-card span { position: absolute; font-weight: 600; }
+.ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 6; }
+.ring-fill {
+    fill: none; stroke: var(--accent); stroke-width: 6;
+    stroke-linecap: round; stroke-dasharray: 220;
+    stroke-dashoffset: 220; transition: stroke-dashoffset 0.6s ease;
+}
+
+/* Heatmap */
+.heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 1rem; }
+.heat-day { aspect-ratio: 1; background: #edf2f7; border-radius: 3px; }
+.heat-day.active-1 { background: #c6f6d5; }
+.heat-day.active-2 { background: #48bb78; }
+
+/* Metas */
+.goal-card { display: flex; justify-content: space-between; align-items: center; }
+.goal-card.completed { opacity: 0.5; }
+.check-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd;
+    cursor: pointer; transition: 0.3s;
+}
+.completed .check-btn { background: var(--accent); border-color: var(--accent); }
+
+/* Formulario & Modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.hidden { display: none !important; }
+.modal-content { background: white; padding: 2rem; border-radius: 25px; width: 90%; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.75rem; margin-bottom: 5px; }
+input, select { width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #eee; }
+.form-row { display: flex; gap: 10px; }
+
+/* Botón Flotante */
+.fab {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--accent); color: white; border: none;
+    font-size: 24px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .form-row { flex-direction: column; }
+}

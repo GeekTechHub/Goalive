@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaFocus | App de Productividad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main id="app">
+        <header class="header">
+            <div class="user-info">
+                <h1>Hola, <span id="user-name">Explorador</span></h1>
+                <p id="ia-suggestion" class="ia-bubble">Analizando tu ritmo... ¡Listo para empezar!</p>
+            </div>
+            <div class="user-stats">
+                <div class="xp-badge">Nivel <span id="user-level">1</span></div>
+                <div class="points-badge"><span id="user-points">0</span> XP</div>
+            </div>
+        </header>
+
+        <section class="insights-container">
+            <div class="progress-ring-card">
+                <svg width="80" height="80">
+                    <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
+                    <circle id="main-progress-ring" class="ring-fill" cx="40" cy="40" r="35"></circle>
+                </svg>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="stats-mini">
+                <p>Racha: <strong id="streak-days">0 días</strong> 🔥</p>
+                <p>Completadas hoy: <strong id="total-completed">0</strong></p>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <h3>Rendimiento Semanal</h3>
+            <canvas id="performanceChart"></canvas>
+            <div class="heatmap-container">
+                <h4>Mapa de Actividad</h4>
+                <div id="heatmap" class="heatmap-grid"></div>
+            </div>
+        </section>
+
+        <section class="goals-section">
+            <h3>Metas de hoy</h3>
+            <div id="goals-list" class="goals-grid">
+                </div>
+        </section>
+
+        <button id="fab-add" class="fab">+</button>
+
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Nueva Meta SMART</h2>
+                <div class="form-group">
+                    <label>¿Qué quieres lograr exactamente?</label>
+                    <input type="text" id="goal-title" placeholder="Ej: Beber 2L de agua">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha Límite</label>
+                        <input type="date" id="goal-deadline">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="goal-category">
+                            <option value="Salud">Salud</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Personal">Personal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="save-goal" class="btn-primary">Añadir Meta</button>
+                    <button id="close-modal" class="btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>
