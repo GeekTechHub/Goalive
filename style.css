@@ -1,85 +1,254 @@
 :root {
-    --bg-color: #f8f9fa;
+    /* Paleta Bento-style / Soft Minimalist */
+    --bg-color: #f4f6f9; /* Off-white */
     --card-bg: #ffffff;
-    --accent: #4ade80;
-    --text-main: #1a1a1b;
-    --text-muted: #6b7280;
-    --shadow: 0 10px 25px rgba(0,0,0,0.05);
+    --text-main: #2d3436;
+    --text-muted: #636e72;
+    --accent: #4e54c8; /* Azul Eléctrico suave */
+    --accent-glow: rgba(78, 84, 200, 0.3);
+    --success: #00b894;
+    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    --radius-l: 24px;
+    --radius-m: 16px;
+    --font-main: 'Inter', sans-serif;
 }
 
+/* Reset básico */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-main);
     background-color: var(--bg-color);
     color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Evita scroll global, solo interno */
 }
 
-#app {
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-    min-height: 100vh;
+/* Header */
+.app-header {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
 }
 
-/* Header & AI Bubble */
-.header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
-.ia-bubble {
-    background: #eef2ff; padding: 0.7rem; border-radius: 12px;
-    font-size: 0.8rem; color: #4f46e5; margin-top: 10px;
-    border-left: 4px solid #4f46e5;
+#greeting { font-size: 1.5rem; font-weight: 800; }
+
+.level-badge {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-/* Cards */
-.insights-container, .stats-card, .goal-card {
+.xp-bar-container {
+    width: 60px;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+/* Layout Principal */
+#app-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 24px 100px 24px; /* Espacio para el Bottom Nav */
+    position: relative;
+}
+
+.view { display: none; animation: fadeIn 0.4s ease; }
+.view.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjetas de Metas (Bento Style) */
+.goal-card {
     background: var(--card-bg);
-    padding: 1.2rem; border-radius: 20px;
-    box-shadow: var(--shadow); margin-bottom: 1rem;
+    border-radius: var(--radius-l);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s, opacity 0.3s;
+    position: relative;
+    overflow: hidden;
 }
+
+.goal-card.completed {
+    opacity: 0.6;
+    background: #f9f9f9;
+}
+
+.goal-info h3 { font-size: 1.1rem; margin-bottom: 5px; }
+.goal-cat { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
+
+/* Botón de Check animado */
+.check-circle {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.goal-card.completed .check-circle {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Estadísticas y Bento Grids */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.bento-box {
+    background: var(--card-bg);
+    border-radius: var(--radius-m);
+    padding: 20px;
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+}
+
+/* IA Card */
+.ai-suggestion-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: var(--radius-l);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 20px -5px rgba(118, 75, 162, 0.4);
+}
+
+.ai-icon { font-size: 1.5rem; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 50%; }
+.ai-text h4 { font-size: 0.9rem; margin-bottom: 4px; }
+.ai-text p { font-size: 0.8rem; opacity: 0.9; line-height: 1.3; }
 
 /* Anillo de Progreso */
-.progress-ring-card { position: relative; display: flex; align-items: center; justify-content: center; }
-.progress-ring-card span { position: absolute; font-weight: 600; }
-.ring-bg { fill: none; stroke: #f1f5f9; stroke-width: 6; }
-.ring-fill {
-    fill: none; stroke: var(--accent); stroke-width: 6;
-    stroke-linecap: round; stroke-dasharray: 220;
-    stroke-dashoffset: 220; transition: stroke-dashoffset 0.6s ease;
+.progress-ring__circle {
+    stroke-dasharray: 326; /* 2 * PI * r (52) */
+    stroke-dashoffset: 326;
+    transition: stroke-dashoffset 1s ease-in-out;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+.progress-ring-container { position: relative; display: flex; justify-content: center; align-items: center; margin-top: 10px; }
+.percentage-text { position: absolute; font-weight: 800; font-size: 1.2rem; }
+
+/* Mapa de Calor Simple */
+.heatmap {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+.day-box {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: #eee;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: #999;
+}
+.day-box.active { background: var(--accent); color: white; }
+
+/* Fab Button */
+.fab-button {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--text-main); /* True Blackish para contraste */
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 100;
+}
+.fab-button:active { transform: translateX(-50%) scale(0.9); }
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; width: 100%;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    z-index: 90;
 }
 
-/* Heatmap */
-.heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 1rem; }
-.heat-day { aspect-ratio: 1; background: #edf2f7; border-radius: 3px; }
-.heat-day.active-1 { background: #c6f6d5; }
-.heat-day.active-2 { background: #48bb78; }
-
-/* Metas */
-.goal-card { display: flex; justify-content: space-between; align-items: center; }
-.goal-card.completed { opacity: 0.5; }
-.check-btn {
-    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ddd;
-    cursor: pointer; transition: 0.3s;
+.nav-item {
+    background: none; border: none;
+    font-size: 1.4rem; color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
 }
-.completed .check-btn { background: var(--accent); border-color: var(--accent); }
+.nav-item.active { color: var(--accent); }
 
-/* Formulario & Modal */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.hidden { display: none !important; }
-.modal-content { background: white; padding: 2rem; border-radius: 25px; width: 90%; }
-.form-group { margin-bottom: 1rem; }
-.form-group label { display: block; font-size: 0.75rem; margin-bottom: 5px; }
-input, select { width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #eee; }
-.form-row { display: flex; gap: 10px; }
+/* Modal */
+.modal {
+    display: none; position: fixed; z-index: 200;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    align-items: flex-end; /* Sheet style bottom */
+}
 
-/* Botón Flotante */
-.fab {
-    position: fixed; bottom: 20px; right: 20px;
-    width: 60px; height: 60px; border-radius: 50%;
+.modal-content {
+    background-color: #fff;
+    width: 100%;
+    padding: 30px 24px 50px 24px;
+    border-radius: 30px 30px 0 0;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
+
+.modal input {
+    width: 100%; padding: 15px 0;
+    font-size: 1.2rem; border: none; border-bottom: 2px solid #eee;
+    font-family: var(--font-main); outline: none; margin: 20px 0;
+}
+.modal-options { display: flex; justify-content: space-between; align-items: center; }
+.btn-primary {
     background: var(--accent); color: white; border: none;
-    font-size: 24px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer;
+    padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 600;
 }
+.close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
 
-/* Responsive */
-@media (max-width: 400px) {
-    .form-row { flex-direction: column; }
-}
+/* Utilidades adicionales */
+.icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text-main); }
