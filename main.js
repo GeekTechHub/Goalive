@@ -1,109 +1,272 @@
-// Estado global
-let state = {
-    user: { points: 0, level: 1, streak: 0 },
-    goals: JSON.parse(localStorage.getItem('goals')) || [],
-    history: JSON.parse(localStorage.getItem('history')) || {}
+/* ESTADO INICIAL Y ESTRUCTURA DE DATOS */
+const defaultData = {
+    user: {
+        name: "Viajero",
+        xp: 0,
+        level: 1,
+        streak: 0,
+        lastLogin: new Date().toDateString()
+    },
+    goals: [] // Array de objetos Meta
 };
 
-// Inicializar Gráfica
-let performanceChart;
-function initChart() {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    performanceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-            datasets: [{
-                data: [0, 0, 0, 0, 0, 0, 0],
-                borderColor: '#4ade80',
-                tension: 0.4,
-                pointRadius: 0
-            }]
-        },
-        options: { plugins: { legend: false }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+// Cargar datos o iniciar
+let appData = JSON.parse(localStorage.getItem('metaflow_data')) || defaultData;
+
+/* ELEMENTOS DOM */
+const views = document.querySelectorAll('.view');
+const navItems = document.querySelectorAll('.nav-item');
+const goalsContainer = document.getElementById('goals-container');
+const greetingEl = document.getElementById('greeting');
+const userLevelEl = document.getElementById('user-level');
+const xpBarEl = document.getElementById('xp-bar');
+const fabBtn = document.getElementById('fab-add');
+const modal = document.getElementById('add-modal');
+const closeModal = document.querySelector('.close-modal');
+const saveGoalBtn = document.getElementById('save-goal-btn');
+const newGoalInput = document.getElementById('new-goal-input');
+const goalCategory = document.getElementById('goal-category');
+
+/* INICIALIZACIÓN */
+function init() {
+    checkStreak();
+    renderDashboard();
+    renderStats();
+    setupNavigation();
+    updateUserUI();
+}
+
+/* LÓGICA DE NAVEGACIÓN */
+function setupNavigation() {
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            // UI Update
+            navItems.forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            
+            // View Update
+            const targetId = item.getAttribute('data-target');
+            views.forEach(v => v.classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+
+            if(targetId === 'insights-view') renderStats(); // Recalcular al ver
+        });
     });
+
+    // Modal Logic
+    fabBtn.addEventListener('click', () => {
+        modal.style.display = "flex";
+        newGoalInput.focus();
+    });
+    
+    closeModal.addEventListener('click', () => modal.style.display = "none");
+    window.onclick = (event) => {
+        if (event.target == modal) modal.style.display = "none";
+    };
 }
 
-// Renderizar Mapa de Calor
-function renderHeatmap() {
-    const heatmap = document.getElementById('heatmap');
-    heatmap.innerHTML = '';
-    for (let i = 20; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        const count = state.history[dateStr] || 0;
-        const day = document.createElement('div');
-        day.className = `heat-day ${count > 0 ? (count > 2 ? 'active-2' : 'active-1') : ''}`;
-        heatmap.appendChild(day);
+/* GESTIÓN DE METAS */
+function renderDashboard() {
+    goalsContainer.innerHTML = '';
+    const today = new Date().toDateString();
+
+    // Filtramos metas (en una app real filtraríamos por fecha, aquí mostramos todas las activas)
+    if (appData.goals.length === 0) {
+        goalsContainer.innerHTML = `<div class="empty-state"><p style="text-align:center; color:#999; margin-top:50px;">Todo tranquilo por aquí.<br>¡Agrega una meta!</p></div>`;
+        return;
     }
-}
 
-// Renderizar Metas
-function renderGoals() {
-    const list = document.getElementById('goals-list');
-    list.innerHTML = '';
-    state.goals.forEach((goal, index) => {
-        const el = document.createElement('div');
-        el.className = `goal-card ${goal.completed ? 'completed' : ''}`;
-        el.innerHTML = `
-            <div>
-                <h4>${goal.title}</h4>
-                <small>${goal.deadline} | ${goal.category}</small>
+    appData.goals.forEach(goal => {
+        const card = document.createElement('div');
+        card.className = `goal-card ${goal.completed ? 'completed' : ''}`;
+        card.innerHTML = `
+            <div class="goal-info">
+                <h3>${goal.title}</h3>
+                <span class="goal-cat" style="color:${getCategoryColor(goal.category)}">${goal.category}</span>
             </div>
-            <div class="check-btn" onclick="toggleGoal(${index})"></div>
+            <div class="check-circle" onclick="toggleGoal(${goal.id})">
+                <i class="fas fa-check" style="display: ${goal.completed ? 'block' : 'none'}"></i>
+            </div>
         `;
-        list.appendChild(el);
+        goalsContainer.appendChild(card);
     });
-    updateUI();
 }
 
-function toggleGoal(index) {
-    state.goals[index].completed = !state.goals[index].completed;
-    if(state.goals[index].completed) {
-        state.user.points += 50;
-        const today = new Date().toISOString().split('T')[0];
-        state.history[today] = (state.history[today] || 0) + 1;
+function addGoal() {
+    const title = newGoalInput.value.trim();
+    if (!title) return;
+
+    const newGoal = {
+        id: Date.now(),
+        title: title,
+        category: goalCategory.value,
+        completed: false,
+        createdAt: new Date().toDateString()
+    };
+
+    appData.goals.unshift(newGoal); // Agregar al principio
+    saveData();
+    renderDashboard();
+    
+    // Reset y cerrar modal
+    newGoalInput.value = '';
+    modal.style.display = "none";
+}
+
+saveGoalBtn.addEventListener('click', addGoal);
+newGoalInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') addGoal();
+});
+
+function toggleGoal(id) {
+    const goal = appData.goals.find(g => g.id === id);
+    if (goal) {
+        goal.completed = !goal.completed;
+        
+        // Gamificación
+        if (goal.completed) {
+            addXP(20);
+            triggerConfetti(); // Efecto visual simple
+        } else {
+            addXP(-20); // Penalización por desmarcar (opcional)
+        }
+        
+        saveData();
+        renderDashboard();
+        renderStats(); // Actualizar anillo si está visible
     }
-    save();
 }
 
-function updateUI() {
-    const completed = state.goals.filter(g => g.completed).length;
-    const total = state.goals.length;
-    const percent = total ? Math.round((completed/total)*100) : 0;
+/* GAMIFICACIÓN Y USUARIO */
+function addXP(amount) {
+    appData.user.xp += amount;
+    if (appData.user.xp >= 100) {
+        appData.user.level++;
+        appData.user.xp = appData.user.xp - 100;
+        alert(`¡Nivel Subido! Ahora eres Nivel ${appData.user.level}`);
+    }
+    if(appData.user.xp < 0) appData.user.xp = 0;
+    updateUserUI();
+}
+
+function updateUserUI() {
+    greetingEl.textContent = `Hola, ${appData.user.name}`;
+    userLevelEl.textContent = `Nvl ${appData.user.level}`;
+    xpBarEl.style.width = `${appData.user.xp}%`;
+}
+
+function checkStreak() {
+    const today = new Date().toDateString();
+    if (appData.user.lastLogin !== today) {
+        // Lógica simple de racha: si entró ayer, aumenta. Si no, reset.
+        // Para MVP solo aumentamos si hay login en día distinto.
+        appData.user.lastLogin = today;
+        // (Aquí iría lógica compleja de días consecutivos)
+    }
+    // Simulación
+    document.getElementById('streak-days').textContent = appData.user.streak;
+}
+
+/* ESTADÍSTICAS E "IA" */
+function renderStats() {
+    const total = appData.goals.length;
+    const completed = appData.goals.filter(g => g.completed).length;
+    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+    // Actualizar anillo
+    const circle = document.getElementById('daily-ring');
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+    const offset = circumference - (percent / 100) * circumference;
     
-    document.getElementById('progress-percent').innerText = percent + '%';
-    document.getElementById('total-completed').innerText = completed;
-    document.getElementById('user-points').innerText = state.user.points;
-    document.getElementById('user-level').innerText = Math.floor(state.user.points/500) + 1;
-    
-    const ring = document.getElementById('main-progress-ring');
-    ring.style.strokeDashoffset = 220 - (percent / 100 * 220);
+    circle.style.strokeDashoffset = offset;
+    document.getElementById('daily-percent').textContent = `${percent}%`;
+
+    // IA Sugerencias
+    generateAISuggestion(percent);
     renderHeatmap();
 }
 
-function save() {
-    localStorage.setItem('goals', JSON.stringify(state.goals));
-    localStorage.setItem('history', JSON.stringify(state.history));
-    renderGoals();
+function generateAISuggestion(percent) {
+    const aiMsg = document.getElementById('ai-message');
+    const day = new Date().getDay(); // 0 Dom - 6 Sab
+    
+    let msg = "";
+    
+    if (percent === 100 && appData.goals.length > 0) {
+        msg = "¡Imparable! Has completado todo. ¿Quizás es hora de una meta más ambiciosa mañana?";
+    } else if (percent < 30 && day === 1) { // Lunes
+        msg = "Los lunes son difíciles. Intenta cumplir solo la meta más pequeña para arrancar motores.";
+    } else if (percent > 50) {
+        msg = "Vas por buen camino. Mantén el ritmo para subir tu racha.";
+    } else {
+        msg = "Detecto un bloqueo. ¿Qué tal si usas el Modo Enfoque por 25 minutos?";
+    }
+    
+    aiMsg.textContent = msg;
 }
 
-// Eventos
-document.getElementById('fab-add').onclick = () => document.getElementById('modal').classList.remove('hidden');
-document.getElementById('close-modal').onclick = () => document.getElementById('modal').classList.add('hidden');
+function renderHeatmap() {
+    const container = document.getElementById('weekly-heatmap');
+    container.innerHTML = '';
+    const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    const todayIdx = new Date().getDay();
 
-document.getElementById('save-goal').onclick = () => {
-    const title = document.getElementById('goal-title').value;
-    const deadline = document.getElementById('goal-deadline').value;
-    const category = document.getElementById('goal-category').value;
-    
-    if(title && deadline) {
-        state.goals.push({ title, deadline, category, completed: false });
-        document.getElementById('modal').classList.add('hidden');
-        save();
+    days.forEach((d, index) => {
+        const div = document.createElement('div');
+        div.className = `day-box ${index <= todayIdx ? 'active' : ''}`; // Simula actividad pasada
+        div.textContent = d;
+        container.appendChild(div);
+    });
+}
+
+/* POMODORO (Modo Enfoque) */
+let timerInterval;
+let timeLeft = 25 * 60; // 25 minutos
+
+document.getElementById('start-timer').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if(timeLeft > 0) {
+            timeLeft--;
+            updateTimerDisplay();
+        } else {
+            clearInterval(timerInterval);
+            alert("¡Tiempo terminado! Tómate un descanso.");
+            addXP(10); // Reward por enfoque
+        }
+    }, 1000);
+});
+
+document.getElementById('reset-timer').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    timeLeft = 25 * 60;
+    updateTimerDisplay();
+});
+
+function updateTimerDisplay() {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    document.getElementById('timer').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+/* UTILIDADES */
+function saveData() {
+    localStorage.setItem('metaflow_data', JSON.stringify(appData));
+}
+
+function getCategoryColor(cat) {
+    switch(cat) {
+        case 'Salud': return '#00b894';
+        case 'Trabajo': return '#0984e3';
+        default: return '#6c5ce7';
     }
-};
+}
 
-// Iniciar
-initChart();
-renderGoals();
+function triggerConfetti() {
+    // Simulación visual simple (vibración si es móvil)
+    if (navigator.vibrate) navigator.vibrate(200);
+}
+
+// Iniciar app
+init();
