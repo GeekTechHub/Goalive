@@ -3,85 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetaFocus | App de Productividad</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>MetaFlow - Soft Minimalist Goal Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <main id="app">
-        <header class="header">
-            <div class="user-info">
-                <h1>Hola, <span id="user-name">Explorador</span></h1>
-                <p id="ia-suggestion" class="ia-bubble">Analizando tu ritmo... ¡Listo para empezar!</p>
-            </div>
-            <div class="user-stats">
-                <div class="xp-badge">Nivel <span id="user-level">1</span></div>
-                <div class="points-badge"><span id="user-points">0</span> XP</div>
-            </div>
-        </header>
-
-        <section class="insights-container">
-            <div class="progress-ring-card">
-                <svg width="80" height="80">
-                    <circle class="ring-bg" cx="40" cy="40" r="35"></circle>
-                    <circle id="main-progress-ring" class="ring-fill" cx="40" cy="40" r="35"></circle>
-                </svg>
-                <span id="progress-percent">0%</span>
-            </div>
-            <div class="stats-mini">
-                <p>Racha: <strong id="streak-days">0 días</strong> 🔥</p>
-                <p>Completadas hoy: <strong id="total-completed">0</strong></p>
-            </div>
-        </section>
-
-        <section class="stats-card">
-            <h3>Rendimiento Semanal</h3>
-            <canvas id="performanceChart"></canvas>
-            <div class="heatmap-container">
-                <h4>Mapa de Actividad</h4>
-                <div id="heatmap" class="heatmap-grid"></div>
-            </div>
-        </section>
-
-        <section class="goals-section">
-            <h3>Metas de hoy</h3>
-            <div id="goals-list" class="goals-grid">
-                </div>
-        </section>
-
-        <button id="fab-add" class="fab">+</button>
-
-        <div id="modal" class="modal hidden">
-            <div class="modal-content">
-                <h2>Nueva Meta SMART</h2>
-                <div class="form-group">
-                    <label>¿Qué quieres lograr exactamente?</label>
-                    <input type="text" id="goal-title" placeholder="Ej: Beber 2L de agua">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha Límite</label>
-                        <input type="date" id="goal-deadline">
-                    </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select id="goal-category">
-                            <option value="Salud">Salud</option>
-                            <option value="Trabajo">Trabajo</option>
-                            <option value="Personal">Personal</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button id="save-goal" class="btn-primary">Añadir Meta</button>
-                    <button id="close-modal" class="btn-secondary">Cancelar</button>
+    <header class="app-header">
+        <div class="user-info">
+            <h1 id="greeting">Hola</h1>
+            <div class="level-badge">
+                <span id="user-level">Nvl 1</span>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="xp-bar"></div>
                 </div>
             </div>
         </div>
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+    </header>
+
+    <main id="app-container">
+        
+        <section id="dashboard-view" class="view active">
+            <div class="section-title">
+                <h2>Tus Metas de Hoy</h2>
+                <span class="date-badge" id="current-date">Hoy</span>
+            </div>
+            
+            <div id="goals-container" class="goals-list">
+                <div class="empty-state">
+                    <p>No tienes metas activas. ¡Toca el + para empezar!</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="insights-view" class="view">
+            <h2>Tu Progreso</h2>
+            
+            <div class="ai-suggestion-card">
+                <div class="ai-icon"><i class="fas fa-robot"></i></div>
+                <div class="ai-text">
+                    <h4>Análisis Inteligente</h4>
+                    <p id="ai-message">Analizando tus patrones...</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card bento-box">
+                    <h3>Eficiencia Diaria</h3>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle class="progress-ring__circle-bg" stroke="#e6e6e6" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                            <circle class="progress-ring__circle" id="daily-ring" stroke="#4e54c8" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                        </svg>
+                        <div class="percentage-text" id="daily-percent">0%</div>
+                    </div>
+                </div>
+
+                <div class="stat-card bento-box streak-box">
+                    <h3>Racha</h3>
+                    <div class="streak-count">
+                        <i class="fas fa-fire"></i>
+                        <span id="streak-days">0</span>
+                    </div>
+                    <p>Días seguidos</p>
+                </div>
+            </div>
+
+            <div class="heatmap-container bento-box">
+                <h3>Productividad Semanal</h3>
+                <div class="heatmap" id="weekly-heatmap">
+                    </div>
+            </div>
+        </section>
+
+        <section id="focus-view" class="view">
+            <h2>Modo Enfoque</h2>
+            <div class="timer-container bento-box">
+                <div class="timer-display" id="timer">25:00</div>
+                <p>Bloquea distracciones</p>
+                <div class="timer-controls">
+                    <button id="start-timer" class="btn-primary">Iniciar</button>
+                    <button id="reset-timer" class="btn-secondary">Reset</button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <script src="main.js"></script>
+    <button id="fab-add" class="fab-button">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>¿Qué quieres lograr?</h3>
+            <input type="text" id="new-goal-input" placeholder="Ej: Leer 10 páginas de un libro..." autocomplete="off">
+            <div class="modal-options">
+                <select id="goal-category">
+                    <option value="Salud">Salud</option>
+                    <option value="Aprendizaje">Aprendizaje</option>
+                    <option value="Trabajo">Trabajo</option>
+                </select>
+                <button id="save-goal-btn" class="btn-primary">Crear Meta</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="dashboard-view">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-item" data-target="insights-view">
+            <i class="fas fa-chart-pie"></i>
+        </button>
+        <button class="nav-item" data-target="focus-view">
+            <i class="fas fa-stopwatch"></i>
+        </button>
+    </nav>
+
+<script type="module" src="main.js"></script>
 </body>
 </html>
