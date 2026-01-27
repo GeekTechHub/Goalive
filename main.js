@@ -26,6 +26,15 @@ const closeModal = document.querySelector('.close-modal');
 const saveGoalBtn = document.getElementById('save-goal-btn');
 const newGoalInput = document.getElementById('new-goal-input');
 const goalCategory = document.getElementById('goal-category');
+const customCategoryInput = document.getElementById('custom-category');
+const goalFrequency = document.getElementById('goal-frequency');
+const goalDate = document.getElementById('goal-date');
+const goalTarget = document.getElementById('goal-target');
+
+goalFrequency.addEventListener('change', () => {
+    goalDate.style.display = goalFrequency.value === 'once' ? 'block' : 'none';
+});
+
 
 /* INICIALIZACIÓN */
 function init() {
@@ -82,7 +91,8 @@ function renderDashboard() {
         card.innerHTML = `
             <div class="goal-info">
                 <h3>${goal.title}</h3>
-                <span class="goal-cat" style="color:${getCategoryColor(goal.category)}">${goal.category}</span>
+<span class="goal-cat">${goal.category} • ${goal.progress}/${goal.target}</span>
+${goal.frequency === "once" && goal.date ? `<small>📅 ${goal.date}</small>` : `<small>🔁 Diario</small>`}
             </div>
             <div class="check-circle" onclick="toggleGoal(${goal.id})">
                 <i class="fas fa-check" style="display: ${goal.completed ? 'block' : 'none'}"></i>
@@ -94,19 +104,36 @@ function renderDashboard() {
 
 function addGoal() {
     const title = newGoalInput.value.trim();
-    if (!title) return;
+    const category = customCategoryInput.value.trim() || "General";
+    const frequency = goalFrequency.value;
+    const date = frequency === "once" ? goalDate.value : null;
+    const target = parseInt(goalTarget.value) || 1;
+
+    if (!title) return alert("Debes escribir una meta");
 
     const newGoal = {
         id: Date.now(),
-        title: title,
-        category: goalCategory.value,
+        title,
+        category,
+        frequency,     // daily | once
+        date,          // yyyy-mm-dd o null
+        target,        // veces a cumplir
+        progress: 0,   // progreso actual
         completed: false,
-        createdAt: new Date().toDateString()
+        createdAt: new Date().toISOString()
     };
 
-    appData.goals.unshift(newGoal); // Agregar al principio
+    appData.goals.unshift(newGoal);
     saveData();
     renderDashboard();
+
+    // Reset UI
+    newGoalInput.value = '';
+    customCategoryInput.value = '';
+    goalTarget.value = '';
+    goalDate.value = '';
+    modal.style.display = "none";
+}
     
     // Reset y cerrar modal
     newGoalInput.value = '';
@@ -120,8 +147,20 @@ newGoalInput.addEventListener('keypress', (e) => {
 
 function toggleGoal(id) {
     const goal = appData.goals.find(g => g.id === id);
-    if (goal) {
-        goal.completed = !goal.completed;
+    if (!goal) return;
+
+    goal.progress++;
+
+    if (goal.progress >= goal.target) {
+        goal.completed = true;
+        addXP(20);
+        triggerConfetti();
+    }
+
+    saveData();
+    renderDashboard();
+    renderStats();
+}
         
         // Gamificación
         if (goal.completed) {
