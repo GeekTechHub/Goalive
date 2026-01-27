@@ -92,7 +92,7 @@ function renderDashboard() {
             <div class="goal-info">
                 <h3>${goal.title}</h3>
 <span class="goal-cat">${goal.category} • ${goal.progress}/${goal.target}</span>
-${goal.frequency === "once" && goal.date ? `<small>📅 ${goal.date}</small>` : `<small>🔁 Diario</small>`}
+${goal.frequency === "once" && goal.date ? `<small> ${goal.date}</small>` : `<small> Diario</small>`}
             </div>
             <div class="check-circle" onclick="toggleGoal(${goal.id})">
                 <i class="fas fa-check" style="display: ${goal.completed ? 'block' : 'none'}"></i>
