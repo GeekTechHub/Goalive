@@ -1,19 +1,26 @@
-// modules/state.js
+// state.js
 
-export const defaultData = {
+const STORAGE_KEY = "goalife_state";
+
+// Estado global de la app
+export let appState = {
   user: {
     name: "Viajero",
     xp: 0,
-    level: 1,
-    streak: 0,
-    lastLogin: new Date().toDateString()
+    level: 1
   },
   goals: []
 };
 
-export let appData = JSON.parse(localStorage.getItem("metaflow_data")) 
-  || structuredClone(defaultData);
+// Cargar desde localStorage
+export function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    appState = JSON.parse(saved);
+  }
+}
 
-export function saveData() {
-  localStorage.setItem("metaflow_data", JSON.stringify(appData));
+// Guardar en localStorage
+export function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
 }
