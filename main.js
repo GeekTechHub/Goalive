@@ -122,21 +122,16 @@ function addGoal() {
         completed: false,
         createdAt: new Date().toISOString()
     };
-
+ // Reset y cerrar modal
     appData.goals.unshift(newGoal);
     saveData();
     renderDashboard();
+    
 
-    // Reset UI
     newGoalInput.value = '';
-    customCategoryInput.value = '';
+customCategoryInput.value = '';
     goalTarget.value = '';
     goalDate.value = '';
-    modal.style.display = "none";
-}
-    
-    // Reset y cerrar modal
-    newGoalInput.value = '';
     modal.style.display = "none";
 }
 
