@@ -25,7 +25,6 @@ const modal = document.getElementById('add-modal');
 const closeModal = document.querySelector('.close-modal');
 const saveGoalBtn = document.getElementById('save-goal-btn');
 const newGoalInput = document.getElementById('new-goal-input');
-const goalCategory = document.getElementById('goal-category');
 const customCategoryInput = document.getElementById('custom-category');
 const goalFrequency = document.getElementById('goal-frequency');
 const goalDate = document.getElementById('goal-date');
@@ -77,9 +76,7 @@ function setupNavigation() {
 /* GESTIÓN DE METAS */
 function renderDashboard() {
     goalsContainer.innerHTML = '';
-    const today = new Date().toDateString();
 
-    // Filtramos metas (en una app real filtraríamos por fecha, aquí mostramos todas las activas)
     if (appData.goals.length === 0) {
         goalsContainer.innerHTML = `<div class="empty-state"><p style="text-align:center; color:#999; margin-top:50px;">Todo tranquilo por aquí.<br>¡Agrega una meta!</p></div>`;
         return;
@@ -91,8 +88,8 @@ function renderDashboard() {
         card.innerHTML = `
             <div class="goal-info">
                 <h3>${goal.title}</h3>
-<span class="goal-cat">${goal.category} • ${goal.progress}/${goal.target}</span>
-${goal.frequency === "once" && goal.date ? `<small> ${goal.date}</small>` : `<small> Diario</small>`}
+                <span class="goal-cat">${goal.category} • ${goal.progress}/${goal.target}</span>
+                ${goal.frequency === "once" && goal.date ? `<small> ${goal.date}</small>` : `<small> Diario</small>`}
             </div>
             <div class="check-circle" onclick="toggleGoal(${goal.id})">
                 <i class="fas fa-check" style="display: ${goal.completed ? 'block' : 'none'}"></i>
@@ -122,14 +119,14 @@ function addGoal() {
         completed: false,
         createdAt: new Date().toISOString()
     };
- // Reset y cerrar modal
+
     appData.goals.unshift(newGoal);
     saveData();
     renderDashboard();
     
-
+    // Reset UI y cerrar modal
     newGoalInput.value = '';
-customCategoryInput.value = '';
+    customCategoryInput.value = '';
     goalTarget.value = '';
     goalDate.value = '';
     modal.style.display = "none";
@@ -156,20 +153,6 @@ function toggleGoal(id) {
     renderDashboard();
     renderStats();
 }
-        
-        // Gamificación
-        if (goal.completed) {
-            addXP(20);
-            triggerConfetti(); // Efecto visual simple
-        } else {
-            addXP(-20); // Penalización por desmarcar (opcional)
-        }
-        
-        saveData();
-        renderDashboard();
-        renderStats(); // Actualizar anillo si está visible
-    }
-}
 
 /* GAMIFICACIÓN Y USUARIO */
 function addXP(amount) {
@@ -192,12 +175,8 @@ function updateUserUI() {
 function checkStreak() {
     const today = new Date().toDateString();
     if (appData.user.lastLogin !== today) {
-        // Lógica simple de racha: si entró ayer, aumenta. Si no, reset.
-        // Para MVP solo aumentamos si hay login en día distinto.
         appData.user.lastLogin = today;
-        // (Aquí iría lógica compleja de días consecutivos)
     }
-    // Simulación
     document.getElementById('streak-days').textContent = appData.user.streak;
 }
 
@@ -214,29 +193,27 @@ function renderStats() {
     const offset = circumference - (percent / 100) * circumference;
     
     circle.style.strokeDashoffset = offset;
+    circle.style.strokeDasharray = circumference; // Asegura que la circunferencia sea correcta
     document.getElementById('daily-percent').textContent = `${percent}%`;
 
-    // IA Sugerencias
     generateAISuggestion(percent);
     renderHeatmap();
 }
 
 function generateAISuggestion(percent) {
     const aiMsg = document.getElementById('ai-message');
-    const day = new Date().getDay(); // 0 Dom - 6 Sab
+    const day = new Date().getDay(); 
     
     let msg = "";
-    
     if (percent === 100 && appData.goals.length > 0) {
         msg = "¡Imparable! Has completado todo. ¿Quizás es hora de una meta más ambiciosa mañana?";
-    } else if (percent < 30 && day === 1) { // Lunes
+    } else if (percent < 30 && day === 1) { 
         msg = "Los lunes son difíciles. Intenta cumplir solo la meta más pequeña para arrancar motores.";
     } else if (percent > 50) {
         msg = "Vas por buen camino. Mantén el ritmo para subir tu racha.";
     } else {
         msg = "Detecto un bloqueo. ¿Qué tal si usas el Modo Enfoque por 25 minutos?";
     }
-    
     aiMsg.textContent = msg;
 }
 
@@ -248,7 +225,7 @@ function renderHeatmap() {
 
     days.forEach((d, index) => {
         const div = document.createElement('div');
-        div.className = `day-box ${index <= todayIdx ? 'active' : ''}`; // Simula actividad pasada
+        div.className = `day-box ${index <= todayIdx ? 'active' : ''}`; 
         div.textContent = d;
         container.appendChild(div);
     });
@@ -256,7 +233,7 @@ function renderHeatmap() {
 
 /* POMODORO (Modo Enfoque) */
 let timerInterval;
-let timeLeft = 25 * 60; // 25 minutos
+let timeLeft = 25 * 60; 
 
 document.getElementById('start-timer').addEventListener('click', () => {
     clearInterval(timerInterval);
@@ -267,7 +244,7 @@ document.getElementById('start-timer').addEventListener('click', () => {
         } else {
             clearInterval(timerInterval);
             alert("¡Tiempo terminado! Tómate un descanso.");
-            addXP(10); // Reward por enfoque
+            addXP(10); 
         }
     }, 1000);
 });
@@ -289,19 +266,12 @@ function saveData() {
     localStorage.setItem('metaflow_data', JSON.stringify(appData));
 }
 
-function getCategoryColor(cat) {
-    switch(cat) {
-        case 'Salud': return '#00b894';
-        case 'Trabajo': return '#0984e3';
-        default: return '#6c5ce7';
-    }
-}
-
 function triggerConfetti() {
-    // Simulación visual simple (vibración si es móvil)
     if (navigator.vibrate) navigator.vibrate(200);
 }
 
 // Iniciar app
 init();
+
+// Hacer disponible para eventos onclick en el HTML
 window.toggleGoal = toggleGoal;
