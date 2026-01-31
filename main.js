@@ -309,3 +309,4 @@ function triggerConfetti() {
 
 // Iniciar app
 init();
+window.toggleGoal = toggleGoal;
