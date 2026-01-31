@@ -7,10 +7,9 @@ const defaultData = {
         streak: 0,
         lastLogin: new Date().toDateString()
     },
-    goals: [] // Array de objetos Meta
+    goals: []
 };
 
-// Cargar datos o iniciar
 let appData = JSON.parse(localStorage.getItem('metaflow_data')) || defaultData;
 
 /* ELEMENTOS DOM */
@@ -34,7 +33,6 @@ goalFrequency.addEventListener('change', () => {
     goalDate.style.display = goalFrequency.value === 'once' ? 'block' : 'none';
 });
 
-
 /* INICIALIZACIÓN */
 function init() {
     checkStreak();
@@ -44,24 +42,19 @@ function init() {
     updateUserUI();
 }
 
-/* LÓGICA DE NAVEGACIÓN */
+/* NAVEGACIÓN */
 function setupNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', () => {
-            // UI Update
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
-            
-            // View Update
             const targetId = item.getAttribute('data-target');
             views.forEach(v => v.classList.remove('active'));
             document.getElementById(targetId).classList.add('active');
-
-            if(targetId === 'insights-view') renderStats(); // Recalcular al ver
+            if(targetId === 'insights-view') renderStats();
         });
     });
 
-    // Modal Logic
     fabBtn.addEventListener('click', () => {
         modal.style.display = "flex";
         newGoalInput.focus();
@@ -76,9 +69,8 @@ function setupNavigation() {
 /* GESTIÓN DE METAS */
 function renderDashboard() {
     goalsContainer.innerHTML = '';
-
     if (appData.goals.length === 0) {
-        goalsContainer.innerHTML = `<div class="empty-state"><p style="text-align:center; color:#999; margin-top:50px;">Todo tranquilo por aquí.<br>¡Agrega una meta!</p></div>`;
+        goalsContainer.innerHTML = `<div class="empty-state"><p style="text-align:center; color:#999; margin-top:50px;">¡Agrega una meta!</p></div>`;
         return;
     }
 
@@ -89,7 +81,6 @@ function renderDashboard() {
             <div class="goal-info">
                 <h3>${goal.title}</h3>
                 <span class="goal-cat">${goal.category} • ${goal.progress}/${goal.target}</span>
-                ${goal.frequency === "once" && goal.date ? `<small> ${goal.date}</small>` : `<small> Diario</small>`}
             </div>
             <div class="check-circle" onclick="toggleGoal(${goal.id})">
                 <i class="fas fa-check" style="display: ${goal.completed ? 'block' : 'none'}"></i>
@@ -101,48 +92,33 @@ function renderDashboard() {
 
 function addGoal() {
     const title = newGoalInput.value.trim();
-    const category = customCategoryInput.value.trim() || "General";
-    const frequency = goalFrequency.value;
-    const date = frequency === "once" ? goalDate.value : null;
-    const target = parseInt(goalTarget.value) || 1;
-
-    if (!title) return alert("Debes escribir una meta");
+    if (!title) return alert("Escribe una meta");
 
     const newGoal = {
         id: Date.now(),
         title,
-        category,
-        frequency,     // daily | once
-        date,          // yyyy-mm-dd o null
-        target,        // veces a cumplir
-        progress: 0,   // progreso actual
-        completed: false,
-        createdAt: new Date().toISOString()
+        category: customCategoryInput.value.trim() || "General",
+        target: parseInt(goalTarget.value) || 1,
+        progress: 0,
+        completed: false
     };
 
     appData.goals.unshift(newGoal);
     saveData();
     renderDashboard();
     
-    // Reset UI y cerrar modal
     newGoalInput.value = '';
-    customCategoryInput.value = '';
-    goalTarget.value = '';
-    goalDate.value = '';
     modal.style.display = "none";
 }
 
 saveGoalBtn.addEventListener('click', addGoal);
-newGoalInput.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') addGoal();
-});
 
+// CORRECCIÓN AQUÍ: Función toggleGoal limpia
 function toggleGoal(id) {
     const goal = appData.goals.find(g => g.id === id);
     if (!goal) return;
 
     goal.progress++;
-
     if (goal.progress >= goal.target) {
         goal.completed = true;
         addXP(20);
@@ -154,15 +130,13 @@ function toggleGoal(id) {
     renderStats();
 }
 
-/* GAMIFICACIÓN Y USUARIO */
+/* SISTEMA DE XP */
 function addXP(amount) {
     appData.user.xp += amount;
     if (appData.user.xp >= 100) {
         appData.user.level++;
-        appData.user.xp = appData.user.xp - 100;
-        alert(`¡Nivel Subido! Ahora eres Nivel ${appData.user.level}`);
+        appData.user.xp -= 100;
     }
-    if(appData.user.xp < 0) appData.user.xp = 0;
     updateUserUI();
 }
 
@@ -173,88 +147,24 @@ function updateUserUI() {
 }
 
 function checkStreak() {
-    const today = new Date().toDateString();
-    if (appData.user.lastLogin !== today) {
-        appData.user.lastLogin = today;
-    }
     document.getElementById('streak-days').textContent = appData.user.streak;
 }
 
-/* ESTADÍSTICAS E "IA" */
 function renderStats() {
     const total = appData.goals.length;
     const completed = appData.goals.filter(g => g.completed).length;
     const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-
-    // Actualizar anillo
+    
     const circle = document.getElementById('daily-ring');
-    const radius = circle.r.baseVal.value;
-    const circumference = radius * 2 * Math.PI;
-    const offset = circumference - (percent / 100) * circumference;
-    
-    circle.style.strokeDashoffset = offset;
-    circle.style.strokeDasharray = circumference; // Asegura que la circunferencia sea correcta
-    document.getElementById('daily-percent').textContent = `${percent}%`;
-
-    generateAISuggestion(percent);
-    renderHeatmap();
-}
-
-function generateAISuggestion(percent) {
-    const aiMsg = document.getElementById('ai-message');
-    const day = new Date().getDay(); 
-    
-    let msg = "";
-    if (percent === 100 && appData.goals.length > 0) {
-        msg = "¡Imparable! Has completado todo. ¿Quizás es hora de una meta más ambiciosa mañana?";
-    } else if (percent < 30 && day === 1) { 
-        msg = "Los lunes son difíciles. Intenta cumplir solo la meta más pequeña para arrancar motores.";
-    } else if (percent > 50) {
-        msg = "Vas por buen camino. Mantén el ritmo para subir tu racha.";
-    } else {
-        msg = "Detecto un bloqueo. ¿Qué tal si usas el Modo Enfoque por 25 minutos?";
+    if(circle) {
+        const circumference = 52 * 2 * Math.PI;
+        circle.style.strokeDashoffset = circumference - (percent / 100) * circumference;
     }
-    aiMsg.textContent = msg;
+    document.getElementById('daily-percent').textContent = `${percent}%`;
 }
 
-function renderHeatmap() {
-    const container = document.getElementById('weekly-heatmap');
-    container.innerHTML = '';
-    const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
-    const todayIdx = new Date().getDay();
-
-    days.forEach((d, index) => {
-        const div = document.createElement('div');
-        div.className = `day-box ${index <= todayIdx ? 'active' : ''}`; 
-        div.textContent = d;
-        container.appendChild(div);
-    });
-}
-
-/* POMODORO (Modo Enfoque) */
-let timerInterval;
-let timeLeft = 25 * 60; 
-
-document.getElementById('start-timer').addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        if(timeLeft > 0) {
-            timeLeft--;
-            updateTimerDisplay();
-        } else {
-            clearInterval(timerInterval);
-            alert("¡Tiempo terminado! Tómate un descanso.");
-            addXP(10); 
-        }
-    }, 1000);
-});
-
-document.getElementById('reset-timer').addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timeLeft = 25 * 60;
-    updateTimerDisplay();
-});
-
+/* POMODORO */
+let timeLeft = 25 * 60;
 function updateTimerDisplay() {
     const m = Math.floor(timeLeft / 60);
     const s = timeLeft % 60;
@@ -270,8 +180,5 @@ function triggerConfetti() {
     if (navigator.vibrate) navigator.vibrate(200);
 }
 
-// Iniciar app
 init();
-
-// Hacer disponible para eventos onclick en el HTML
-window.toggleGoal = toggleGoal;
+window.toggleGoal = toggleGoal; // Esto permite que el HTML vea la función
