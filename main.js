@@ -196,4 +196,4 @@ function triggerConfetti() {
 }
 
 init();
-window.toggleGoal = toggleGoal; // Esto permite que el HTML vea la función
+window.toggleGoal = toggleGoal;
