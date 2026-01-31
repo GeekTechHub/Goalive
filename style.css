@@ -1,5 +1,5 @@
 :root {
-    /* Paleta Bento-style original */
+    /* Paleta Bento-style / Soft Minimalist */
     --bg-color: #f4f6f9;
     --card-bg: #ffffff;
     --text-main: #2d3436;
@@ -13,16 +13,16 @@
     --font-main: 'Inter', sans-serif;
 }
 
-/* --- VARIABLES MODO OSCURO --- */
+/* VARIABLES MODO OSCURO */
 body.dark-theme {
     --bg-color: #121212;
     --card-bg: #1e1e1e;
-    --text-main: #ffffff;
+    --text-main: #f4f6f9;
     --text-muted: #a0a0a0;
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Reset básico */
+/* Reset y Base */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -33,7 +33,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: background-color 0.3s, color 0.3s; /* Transición suave */
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* Header */
@@ -44,98 +44,113 @@ body {
     align-items: center;
 }
 
-#greeting { font-size: 1.5rem; font-weight: 800; }
-
-/* XP Bar */
+/* Barra de XP */
 .xp-bar-container {
-    width: 60px; height: 6px;
+    width: 80px; height: 8px;
     background: rgba(0,0,0,0.1);
-    border-radius: 10px; margin-top: 4px; overflow: hidden;
+    border-radius: 10px; margin-top: 5px;
 }
 body.dark-theme .xp-bar-container { background: rgba(255,255,255,0.1); }
 
 .xp-bar-fill {
     height: 100%; background: var(--accent);
-    width: 0%; transition: width 0.5s ease;
+    width: 0%; border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Layout Principal */
+/* Layout */
 #app-container {
     flex: 1; overflow-y: auto;
-    padding: 0 24px 100px 24px;
+    padding: 0 24px 120px 24px;
 }
 
-.view { display: none; animation: fadeIn 0.4s ease; }
-.view.active { display: block; }
+.view { display: none; }
+.view.active { display: block; animation: slideUpFade 0.4s ease; }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Tarjetas Bento */
+/* Tarjetas de Metas */
 .goal-card {
     background: var(--card-bg);
     border-radius: var(--radius-l);
-    padding: 20px; margin-bottom: 20px;
+    padding: 20px; margin-bottom: 16px;
     box-shadow: var(--shadow-soft);
     display: flex; align-items: center; justify-content: space-between;
+    transition: transform 0.2s;
 }
 
-.goal-card.completed { opacity: 0.6; }
+.goal-card:active { transform: scale(0.98); }
 
-/* Botón de Check */
-.check-circle {
-    width: 32px; height: 32px;
-    border: 2px solid #ddd; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-}
-body.dark-theme .check-circle { border-color: #444; }
-
-.goal-card.completed .check-circle {
-    background: var(--success); border-color: var(--success); color: white;
+.goal-card.completed {
+    background-color: var(--bg-color);
+    opacity: 0.7;
 }
 
-/* Bottom Nav Mejorado */
+/* Navegación Inferior */
 .bottom-nav {
     position: fixed; bottom: 0; left: 0; width: 100%;
-    height: 70px; background: var(--card-bg);
+    height: 80px; background: var(--card-bg);
     display: flex; justify-content: space-around; align-items: center;
-    border-top: 1px solid rgba(0,0,0,0.05); z-index: 90;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    backdrop-filter: blur(10px);
+    z-index: 100;
 }
 body.dark-theme .bottom-nav { border-top: 1px solid rgba(255,255,255,0.05); }
 
 .nav-item {
-    background: none; border: none; font-size: 1.4rem;
+    background: none; border: none; font-size: 1.5rem;
     color: var(--text-muted); cursor: pointer; transition: 0.3s;
 }
-.nav-item.active { color: var(--accent); transform: translateY(-5px); }
 
-/* Modal Estilo Sheet */
-.modal-content {
-    background-color: var(--card-bg);
-    color: var(--text-main);
-    width: 100%; padding: 30px 24px 50px 24px;
-    border-radius: 30px 30px 0 0;
+.nav-item.active {
+    color: var(--accent);
+    transform: translateY(-5px);
 }
+
+/* Botón flotante (+) */
+.fab-button {
+    position: fixed; bottom: 100px; right: 24px;
+    width: 56px; height: 56px; border-radius: 18px;
+    background: var(--text-main); color: var(--bg-color);
+    border: none; font-size: 1.2rem; cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    z-index: 101;
+}
+
+/* Modales */
+.modal {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+    z-index: 200; align-items: flex-end;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    width: 100%; padding: 32px 24px;
+    border-radius: 32px 32px 0 0;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
 .modal input, .modal select {
-    width: 100%; padding: 12px; margin: 10px 0;
-    background: rgba(0,0,0,0.05); border: none;
-    border-radius: 12px; color: var(--text-main);
-    font-family: inherit;
-}
-body.dark-theme .modal input { background: rgba(255,255,255,0.05); }
-
-/* Botón flotante */
-.fab-button {
-    position: fixed; bottom: 90px; left: 50%;
-    transform: translateX(-50%);
-    width: 60px; height: 60px; border-radius: 50%;
-    background: var(--text-main); color: var(--bg-color);
-    border: none; font-size: 1.5rem; z-index: 100;
+    width: 100%; padding: 14px; margin: 8px 0;
+    border-radius: 12px; border: 1px solid rgba(0,0,0,0.1);
+    background: var(--bg-color); color: var(--text-main);
+    font-size: 1rem;
 }
 
-/* Utilidades */
-.icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text-main); }
+/* Botones */
+.btn-primary {
+    background: var(--accent); color: white;
+    border: none; padding: 16px; border-radius: 16px;
+    width: 100%; font-weight: 600; margin-top: 10px;
+}
+
+.icon-btn {
+    background: none; border: none; font-size: 1.2rem;
+    color: var(--text-main); cursor: pointer;
+}
