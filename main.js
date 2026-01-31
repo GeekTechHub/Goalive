@@ -40,7 +40,22 @@ function init() {
     renderStats();
     setupNavigation();
     updateUserUI();
+/* LÓGICA DE TEMA OSCURO */
+const themeToggle = document.getElementById('theme-toggle');
+
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    
+    // Guardar la preferencia del usuario
+    const isDark = document.body.classList.contains('dark-theme');
+    localStorage.setItem('dark-mode', isDark);
+});
+
+// Cargar preferencia al iniciar
+if (localStorage.getItem('dark-mode') === 'true') {
+    document.body.classList.add('dark-theme');
 }
+
 
 /* NAVEGACIÓN */
 function setupNavigation() {
